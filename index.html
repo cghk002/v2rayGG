@@ -162,10 +162,9 @@ async function getSub() {
 
     const data = await res.json();
 
-    if (data.data && data.data.content) {
-      const sub = atob(data.data.content);
+    if (data) { 
 
-      document.getElementById("result").innerText = sub;
+      document.getElementById("result").innerText = data;
 
       await navigator.clipboard.writeText(sub);
 
