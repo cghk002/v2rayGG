@@ -159,12 +159,11 @@ async function getSub() {
     const res = await fetch(
       "https://env-00jxtag54arx.dev-hz.cloudbasefunction.cn/subscribeClean?type=get"
     );
+ 
 
-    const data = await res.json();
+    if (res) { 
 
-    if (data) { 
-
-      document.getElementById("result").innerText = data;
+      document.getElementById("result").innerText = res;
 
       await navigator.clipboard.writeText(sub);
 
