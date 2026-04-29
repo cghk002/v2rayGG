@@ -1,38 +1,167 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <title>干净订阅生成</title>
-  <style>
-    body{max-width:700px;margin:30px auto;padding:0 20px;font-family:system-ui;background:#f6f8fa}
-    .card{background:white;padding:25px;border-radius:12px;margin-bottom:20px;box-shadow:0 1px 3px #0000001a}
-    input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;margin-top:10px;font-size:15px}
-    button{background:#0071e3;color:white;border:none;padding:12px 20px;border-radius:8px;margin-top:15px;cursor:pointer;font-size:16px}
-    .result{margin-top:20px;padding:15px;background:#f6f8fa;border-radius:8px;word-break:break-all;font-size:14px}
-  </style>
+<meta charset="UTF-8">
+<title>高速网络控制台</title>
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: #fff;
+}
+
+.sidebar {
+  width: 220px;
+  height: 100vh;
+  background: #020617;
+  position: fixed;
+  padding: 20px;
+}
+
+.sidebar h2 {
+  color: #38bdf8;
+}
+
+.menu-item {
+  margin: 12px 0;
+  cursor: pointer;
+  color: #94a3b8;
+}
+
+.menu-item:hover {
+  color: #38bdf8;
+}
+
+.main {
+  margin-left: 240px;
+  padding: 40px;
+}
+
+.card {
+  background: #020617;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+}
+
+button {
+  padding: 10px 20px;
+  background: #38bdf8;
+  border: none;
+  color: #000;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+input {
+  padding: 10px;
+  width: 100%;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  border: none;
+}
+</style>
 </head>
+
 <body>
 
-<div class="card">
-  <h2>干净订阅生成器</h2>
-  <p>自动删除所有含「官网」的节点</p>
-  <input type="text" id="subUrl" placeholder="输入原始订阅地址">
-  <button onclick="createUrl()">生成干净订阅链接</button>
-  <div id="result" class="result" style="display:none"></div>
+<div class="sidebar">
+  <h2>节点控制台</h2>
+  <div class="menu-item" onclick="deny()">个人中心</div>
+  <div class="menu-item" onclick="deny()">节点列表</div>
+  <div class="menu-item" onclick="deny()">流量统计</div>
+  <div class="menu-item" onclick="deny()">订单管理</div>
+  <div class="menu-item" onclick="deny()">工单系统</div>
+  <div class="menu-item" onclick="deny()">域名管理</div>
+  <div class="menu-item" onclick="deny()">支付中心</div>
+  <div class="menu-item" onclick="deny()">邀请返利</div>
+</div>
+
+<div class="main">
+  <div class="card" id="content">
+    <h2>加载中...</h2>
+  </div>
 </div>
 
 <script>
-// 👇 把这里改成你的 UniCloud 云函数地址
-const UNICLOUD_API = "https://env-00jxtag54arx.dev-hz.cloudbasefunction.cn/subscribeClean";
+const params = new URLSearchParams(window.location.search);
+const isUserMode = params.get("user") === "1";
 
-function createUrl() {
-  const url = document.getElementById("subUrl").value.trim();
-  if (!url) return alert("请输入订阅地址");
-  
-  const final = UNICLOUD_API + "?url=" + encodeURIComponent(url);
-  const res = document.getElementById("result");
-  res.innerText = "✅ 干净订阅链接（已删除官网）：\n" + final;
-  res.style.display = "block";
+const content = document.getElementById("content");
+
+function deny() {
+  alert("权限不足");
+}
+
+// ===== 用户模式 =====
+if (isUserMode) {
+  content.innerHTML = `
+    <h2>更新订阅地址</h2>
+    <input id="subInput" placeholder="输入新的订阅地址"/>
+    <button onclick="updateSub()">更新地址</button>
+  `;
+}
+
+// ===== 普通模式 =====
+else {
+  content.innerHTML = `
+    <h2>获取订阅地址</h2>
+    <button onclick="getSub()">获取订阅</button>
+    <p id="result"></p>
+  `;
+}
+
+async function getSub() {
+  try {
+    const res = await fetch(
+      "https://env-00jxtag54arx.dev-hz.cloudbasefunction.cn/subscribeClean?type=get"
+    );
+
+    const data = await res.json();
+
+    if (data.data && data.data.content) {
+      const sub = data.data.content;
+
+
+      document.getElementById("result").innerText = sub;
+
+      await navigator.clipboard.writeText(sub);
+
+      alert("订阅地址已复制, 去V2rayN中粘贴即可");
+    } else {
+      alert("获取失败");
+    }
+  } catch (e) {
+    alert("请求失败");
+  }
+}
+
+async function updateSub() {
+  const input = document.getElementById("subInput").value;
+
+  if (!input) {
+    alert("请输入地址");
+    return;
+  }
+
+  try {
+    const url = encodeURIComponent(input);
+
+    const res = await fetch(
+      `https://env-00jxtag54arx.dev-hz.cloudbasefunction.cn/subscribeClean?type=set&sub=${url}`
+    );
+
+    const data = await res.json();
+
+    if (data.updated === 1) {
+      alert("更新成功");
+    } else {
+      alert("更新失败");
+    }
+  } catch (e) {
+    alert("请求失败");
+  }
 }
 </script>
 
