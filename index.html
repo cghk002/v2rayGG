@@ -160,7 +160,7 @@ async function getSub() {
       "https://env-00jxtag54arx.dev-hz.cloudbasefunction.cn/subscribeClean?type=get"
     );
  
-    const sub = await res.text();
+    const sub = await res.clone().text();
 
     if (sub) { 
 
