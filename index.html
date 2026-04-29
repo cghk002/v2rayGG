@@ -160,10 +160,11 @@ async function getSub() {
       "https://env-00jxtag54arx.dev-hz.cloudbasefunction.cn/subscribeClean?type=get"
     );
  
+    const sub = await res.text();
 
     if (res) { 
 
-      document.getElementById("result").innerText = await res.text();
+      document.getElementById("result").innerText = sub;
 
       await navigator.clipboard.writeText(sub);
 
