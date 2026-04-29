@@ -1,90 +1,40 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<title>Clash 订阅处理（无CORS）</title>
-<style>
-  body{max-width:700px;margin:30px auto;padding:0 20px;font-family:system-ui}
-  .card{background:#f6f8fa;padding:20px;border-radius:12px;margin-bottom:20px}
-  input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;margin-top:8px}
-  button{background:#0071e3;color:white;border:none;padding:12px 20px;border-radius:8px;margin-top:12px;cursor:pointer}
-  .result{margin-top:16px;padding:12px;background:white;border-radius:8px;word-break:break-all;font-size:14px}
-</style>
+  <meta charset="UTF-8">
+  <title>干净订阅生成</title>
+  <style>
+    body{max-width:700px;margin:30px auto;padding:0 20px;font-family:system-ui;background:#f6f8fa}
+    .card{background:white;padding:25px;border-radius:12px;margin-bottom:20px;box-shadow:0 1px 3px #0000001a}
+    input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;margin-top:10px;font-size:15px}
+    button{background:#0071e3;color:white;border:none;padding:12px 20px;border-radius:8px;margin-top:15px;cursor:pointer;font-size:16px}
+    .result{margin-top:20px;padding:15px;background:#f6f8fa;border-radius:8px;word-break:break-all;font-size:14px}
+  </style>
 </head>
 <body>
+
 <div class="card">
-  <h3>Clash 订阅清理（删除含「官网」节点）</h3>
+  <h2>干净订阅生成器</h2>
+  <p>自动删除所有含「官网」的节点</p>
   <input type="text" id="subUrl" placeholder="输入原始订阅地址">
-  <button onclick="build()">生成可用订阅链接</button>
+  <button onclick="createUrl()">生成干净订阅链接</button>
   <div id="result" class="result" style="display:none"></div>
 </div>
 
 <script>
-// ==============================
-// 接口模式：返回 Base64（无CORS）
-// ==============================
-(async () => {
-  const params = new URLSearchParams(location.search)
-  const api = params.get('api')
-  const url = params.get('url')
+// 👇 把这里改成你的 UniCloud 云函数地址
+const UNICLOUD_API = "https://xxx.xxx.xxx.xxx.unicloud.net/subscribeClean";
 
-  if (!api || !url) return
-
-  try {
-    // ✅ 走公共 CORS 代理，绝对不跨域
-    const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url)
-    const res = await fetch(proxy, {
-      headers: { 'User-Agent': 'Clash.Meta' }
-    })
-    const json = await res.json()
-    let yaml = json.contents
-
-    // ======================
-    // 删除所有含「官网」的节点 & 引用
-    // ======================
-    const lines = yaml.split('\n')
-    const out = []
-    const KEY = '官网'
-    let inProxies = false, inGroup = false, skip = false
-
-    for (const line of lines) {
-      const trim = line.trim()
-      if (trim === 'proxies:') { inProxies = true; inGroup = false }
-      if (trim === 'proxy-groups:') { inGroup = true; inProxies = false }
-      if (trim !== '' && !line.startsWith(' ') && !trim.startsWith('-')) {
-        inProxies = inGroup = skip = false
-      }
-      // 跳过含官网的代理节点
-      if (inProxies) {
-        if (trim.startsWith('-')) skip = false
-        if (line.includes(KEY) && /^\s*name:/.test(line)) skip = true
-        if (skip) continue
-      }
-      // 跳过分组里的官网引用
-      if (inGroup && line.includes(KEY) && trim.startsWith('-')) continue
-      out.push(line)
-    }
-
-    // 转 Base64
-    const finalYaml = out.join('\n')
-    const base64 = btoa(unescape(encodeURIComponent(finalYaml)))
-    document.body.innerHTML = base64
-  } catch (e) {
-    document.body.innerHTML = 'ERROR'
-  }
-})()
-
-// ==============================
-// 网页：生成链接
-// ==============================
-function build() {
-  const url = document.getElementById('subUrl').value.trim()
-  if (!url) return alert('请输入订阅地址')
-  const link = `${location.origin}${location.pathname}?api=1&url=${encodeURIComponent(url)}`
-  const r = document.getElementById('result')
-  r.innerText = '直接复制到 Clash 使用：\n' + link
-  r.style.display = 'block'
+function createUrl() {
+  const url = document.getElementById("subUrl").value.trim();
+  if (!url) return alert("请输入订阅地址");
+  
+  const final = UNICLOUD_API + "?url=" + encodeURIComponent(url);
+  const res = document.getElementById("result");
+  res.innerText = "✅ 干净订阅链接（已删除官网）：\n" + final;
+  res.style.display = "block";
 }
 </script>
+
 </body>
 </html>
