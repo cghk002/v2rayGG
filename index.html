@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>订阅处理工具</title>
+  <style>
+    * {box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui;}
+    body {padding: 30px; max-width: 700px; margin: 0 auto; background: #f6f8fa;}
+    h1 {margin-bottom: 20px; color: #24292f;}
+    .box {background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);}
+    label {font-weight: 600; display: block; margin-bottom: 8px;}
+    input {width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px;}
+    button {background: #2da44e; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px;}
+    button:hover {background: #2c974b;}
+    .result {margin-top: 15px; padding: 12px; background: #f6f8fa; border-radius: 6px; word-break: break-all; font-size: 12px; color: #333; display: none;}
+  </style>
+</head>
+
+<body>
+  <h1>订阅处理工具</h1>
+
+  <div class="box">
+    <label>目标订阅地址（TARGET_URL）</label>
+    <input type="text" id="targetUrl" placeholder="输入你的原始订阅地址">
+    <button onclick="generate()">生成处理后的 Base64 订阅</button>
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    // ==============================================
+    // 核心：判断是否为【接口请求】，直接返回 Base64
+    // ==============================================
+    (async function () {
+      const ua = navigator.userAgent || "";
+      const isBrowser = /Mozilla|Chrome|Safari|Edge|Firefox/i.test(ua);
+      const urlParams = new URLSearchParams(window.location.search);
+      const apiMode = urlParams.get("api") === "1";
+
+      // 接口模式：直接返回 Base64
+      if (!isBrowser || apiMode) {
+        try {
+          const TARGET_URL = urlParams.get("url");
+          if (!TARGET_URL) throw new Error("缺少 url 参数");
+
+          // 请求原始订阅
+          const res = await fetch(TARGET_URL, {
+            headers: { "User-Agent": "Clash.Meta" }
+          });
+          let yaml = await res.text();
+
+          // ==============================================
+          // 自动删除所有含【官网】的节点与引用
+          // ==============================================
+          const lines = yaml.split("\n");
+          const out = [];
+          const KEYWORD = "官网";
+          let inProxies = false, inGroup = false, skip = false;
+
+          for (const line of lines) {
+            const trim = line.trim();
+
+            if (trim === "proxies:") {
+              inProxies = true; inGroup = false;
+            }
+            if (trim === "proxy-groups:") {
+              inGroup = true; inProxies = false;
+            }
+            if (trim !== "" && !line.startsWith(" ") && !trim.startsWith("-")) {
+              inProxies = false; inGroup = false; skip = false;
+            }
+
+            // 删除 proxies 里含「官网」的节点
+            if (inProxies) {
+              if (trim.startsWith("-")) skip = false;
+              if (line.includes(KEYWORD) && /^\s*name:/.test(line)) skip = true;
+              if (skip) continue;
+            }
+
+            // 删除分组里引用的「官网」
+            if (inGroup && line.includes(KEYWORD) && trim.startsWith("-")) continue;
+
+            out.push(line);
+          }
+
+          const finalYaml = out.join("\n");
+          const base64 = btoa(unescape(encodeURIComponent(finalYaml)));
+
+          // 直接输出纯 Base64
+          document.body.innerHTML = base64;
+          return;
+        } catch (e) {
+          document.body.innerHTML = "ERROR";
+        }
+      }
+    })();
+
+    // ==============================================
+    // 网页端：生成按钮逻辑
+    // ==============================================
+    function generate() {
+      const url = document.getElementById("targetUrl").value.trim();
+      if (!url) return alert("请输入订阅地址");
+      
+      const resultDom = document.getElementById("result");
+      const fullUrl = `${window.location.origin}${window.location.pathname}?api=1&url=${encodeURIComponent(url)}`;
+      
+      resultDom.innerText = fullUrl + "\n\n直接在 Clash 中使用此链接即可";
+      resultDom.style.display = "block";
+    }
+  </script>
+</body>
+</html>
