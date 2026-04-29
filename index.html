@@ -1,231 +1,209 @@
 <!DOCTYPE html>
 <html lang="zh">
-
 <head>
-    <meta charset="UTF-8">
-    <title>高速网络控制台</title>
+<meta charset="UTF-8">
+<title>高速网络控制台</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial;
-            background: #0f172a;
-            color: #fff;
-        }
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f172a;
+  color: #fff;
+}
 
-        /* ===== 左侧栏 ===== */
-        .sidebar {
-            width: 220px;
-            height: 100vh;
-            background: #020617;
-            position: fixed;
-            padding: 20px;
-        }
+/* ===== 左侧栏 ===== */
+.sidebar {
+  width: 220px;
+  height: 100vh;
+  background: #020617;
+  position: fixed;
+  padding: 20px;
+}
 
-        .sidebar h2 {
-            color: #38bdf8;
-        }
+.sidebar h2 {
+  color: #38bdf8;
+}
 
-        .menu-item {
-            margin: 12px 0;
-            cursor: pointer;
-            color: #94a3b8;
-        }
+.menu-item {
+  margin: 12px 0;
+  cursor: pointer;
+  color: #94a3b8;
+}
 
-        .menu-item:hover {
-            color: #38bdf8;
-        }
+.menu-item:hover {
+  color: #38bdf8;
+}
 
-        /* ===== 主区域：居中关键 ===== */
-        .main {
-            margin-left: 220px;
-            height: 100vh;
+/* ===== 主区域：居中关键 ===== */
+.main {
+  margin-left: 220px;
+  height: 100vh;
 
-            display: flex;
-            justify-content: center;
-            /* 水平居中 */
-            align-items: center;
-            /* 垂直居中 */
-        }
+  display: flex;
+  justify-content: center;  /* 水平居中 */
+  align-items: center;      /* 垂直居中 */
+}
 
-        /* ===== 卡片 ===== */
-        .card {
-            background: #020617;
-            padding: 40px;
-            border-radius: 16px;
-            width: 720px;
+/* ===== 卡片 ===== */
+.card {
+  background: #020617;
+  padding: 40px;
+  border-radius: 16px;
+  width: 420px;
+  box-shadow: 0 0 30px rgba(56,189,248,0.15);
+}
 
-            display: flex;
-            gap: 30px;
+/* ===== 标题 ===== */
+.card h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #38bdf8;
+}
 
-            box-shadow: 0 0 30px rgba(56, 189, 248, 0.15);
-        }
+/* ===== 按钮 ===== */
+button {
+  width: 100%;
+  padding: 12px;
+  background: #38bdf8;
+  border: none;
+  color: #000;
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-top: 10px;
+}
 
-        /* ===== 标题 ===== */
-        .card h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            text-align: center;
-            color: #38bdf8;
-        }
+button:hover {
+  opacity: 0.9;
+}
 
-        /* ===== 按钮 ===== */
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #38bdf8;
-            border: none;
-            color: #000;
-            cursor: pointer;
-            border-radius: 8px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
+/* ===== 输入框 ===== */
+input {
+  padding: 12px;
+  width: 100%;
+  border-radius: 8px;
+  border: none;
+  margin-bottom: 10px;
+}
 
-        button:hover {
-            opacity: 0.9;
-        }
+/* ===== 结果显示（关键修复） ===== */
+#result {
+  margin-top: 15px;
+  padding: 10px;
+  background: #0f172a;
+  border-radius: 8px;
 
-        /* ===== 输入框 ===== */
-        input {
-            padding: 12px;
-            width: 100%;
-            border-radius: 8px;
-            border: none;
-            margin-bottom: 10px;
-        }
+  /* 👇 防止溢出核心 */
+  word-break: break-all;
+  white-space: normal;
+  overflow-wrap: break-word;
 
-        /* ===== 结果显示（关键修复） ===== */
-        #result {
-            margin-top: 15px;
-            padding: 10px;
-            background: #0f172a;
-            border-radius: 8px;
-
-            /* 👇 防止溢出核心 */
-            word-break: break-all;
-            white-space: normal;
-            overflow-wrap: break-word;
-
-            max-height: 120px;
-            overflow-y: auto;
-            font-size: 13px;
-            color: #94a3b8;
-        }
-    </style>
+  max-height: 120px;
+  overflow-y: auto;
+  font-size: 13px;
+  color: #94a3b8;
+}
+</style>
 </head>
 
 <body>
 
-    <div class="sidebar">
-        <h2>节点控制台</h2>
-        <div class="menu-item" onclick="deny()">个人中心</div>
-        <div class="menu-item" onclick="deny()">节点列表</div>
-        <div class="menu-item" onclick="deny()">流量统计</div>
-        <div class="menu-item" onclick="deny()">订单管理</div>
-        <div class="menu-item" onclick="deny()">工单系统</div>
-        <div class="menu-item" onclick="deny()">域名管理</div>
-        <div class="menu-item" onclick="deny()">支付中心</div>
-        <div class="menu-item" onclick="deny()">邀请返利</div>
-    </div>
+<div class="sidebar">
+  <h2>节点控制台</h2>
+  <div class="menu-item" onclick="deny()">个人中心</div>
+  <div class="menu-item" onclick="deny()">节点列表</div>
+  <div class="menu-item" onclick="deny()">流量统计</div>
+  <div class="menu-item" onclick="deny()">订单管理</div>
+  <div class="menu-item" onclick="deny()">工单系统</div>
+  <div class="menu-item" onclick="deny()">域名管理</div>
+  <div class="menu-item" onclick="deny()">支付中心</div>
+  <div class="menu-item" onclick="deny()">邀请返利</div>
+</div>
 
-    <div class="main">
-        <div class="card" id="content"></div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.min.js"></script>
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        const isUserMode = params.get("user") === "1";
+<div class="main">
+  <div class="card" id="content"></div>
+</div>
 
-        const content = document.getElementById("content");
+<script>
+const params = new URLSearchParams(window.location.search);
+const isUserMode = params.get("user") === "1";
 
-        function deny() {
-            alert("权限不足");
-        }
+const content = document.getElementById("content");
 
-        // ===== 用户模式 =====
-        if (isUserMode) {
-            content.innerHTML = `
+function deny() {
+  alert("权限不足");
+}
+
+// ===== 用户模式 =====
+if (isUserMode) {
+  content.innerHTML = `
     <h2>更新订阅地址</h2>
     <input id="subInput" placeholder="输入新的订阅地址"/>
     <button onclick="updateSub()">更新地址</button>
   `;
-        }
+}
 
-        // ===== 普通模式 =====
-        else {
-            content.innerHTML = `
-  <div style="flex:1;">
+// ===== 普通模式 =====
+else {
+  content.innerHTML = `
     <h2>获取专属订阅地址</h2>
     <button onclick="getSub()">获取订阅</button>
     <p id="result"></p>
-  </div>
+  `;
+}
 
-  <div style="width:200px;text-align:center;">
-    <div id="qrcode"></div>
-  </div>
-`;
-        }
+async function getSub() {
+  try {
+    const res = await fetch(
+      "https://env-00jxtag54arx.dev-hz.cloudbasefunction.cn/subscribeClean?type=get"
+    );
+ 
+    const sub = atob( await res.text());
 
-        async function getSub() {
-            try {
-                const res = await fetch(
-                    "https://env-00jxtag54arx.dev-hz.cloudbasefunction.cn/subscribeClean?type=get"
-                );
+    if (res) { 
 
-                const sub = await res.text();
+      document.getElementById("result").innerText = sub;
 
-                if (res) {
+      await navigator.clipboard.writeText(sub);
 
-                    document.getElementById("result").innerText = sub;
+      alert("订阅地址已复制, 去V2rayN中粘贴即可");
+    } else {
+      alert("获取失败");
+    }
+  } catch (e) {
+    alert("请求失败");
+  }
+}
 
-                    await navigator.clipboard.writeText(sub);
-                    // 清空旧二维码
-                    document.getElementById("qrcode").innerHTML = "";
+async function updateSub() {
+  const input = document.getElementById("subInput").value;
 
-                    // 生成二维码
-                    new QRCode(document.getElementById("qrcode"), {
-                        text: sub,
-                        width: 180,
-                        height: 180
-                    });
-                    alert("订阅地址已复制, 去V2rayN中粘贴即可");
-                } else {
-                    alert("获取失败");
-                }
-            } catch (e) {
-                alert("请求失败");
-            }
-        }
+  if (!input) {
+    alert("请输入地址");
+    return;
+  }
 
-        async function updateSub() {
-            const input = document.getElementById("subInput").value;
+  try {
+    const url = encodeURIComponent(input);
 
-            if (!input) {
-                alert("请输入地址");
-                return;
-            }
+    const res = await fetch(
+      `https://env-00jxtag54arx.dev-hz.cloudbasefunction.cn/subscribeClean?type=set&sub=${url}`
+    );
 
-            try {
-                const url = encodeURIComponent(input);
+    const data = await res.json();
 
-                const res = await fetch(
-                    `https://env-00jxtag54arx.dev-hz.cloudbasefunction.cn/subscribeClean?type=set&sub=${url}`
-                );
-
-                const data = await res.json();
-
-                if (data.updated === 1) {
-                    alert("更新成功");
-                } else {
-                    alert("更新失败");
-                }
-            } catch (e) {
-                alert("请求失败");
-            }
-        }
-    </script>
+    if (data.updated === 1) {
+      alert("更新成功");
+    } else {
+      alert("更新失败");
+    }
+  } catch (e) {
+    alert("请求失败");
+  }
+}
+</script>
 
 </body>
-
 </html>
