@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>高速网络控制台</title>
+
 <style>
 body {
   margin: 0;
@@ -11,6 +12,7 @@ body {
   color: #fff;
 }
 
+/* ===== 左侧栏 ===== */
 .sidebar {
   width: 220px;
   height: 100vh;
@@ -33,33 +35,75 @@ body {
   color: #38bdf8;
 }
 
+/* ===== 主区域：居中关键 ===== */
 .main {
-  margin-left: 240px;
-  padding: 40px;
+  margin-left: 220px;
+  height: 100vh;
+
+  display: flex;
+  justify-content: center;  /* 水平居中 */
+  align-items: center;      /* 垂直居中 */
 }
 
+/* ===== 卡片 ===== */
 .card {
   background: #020617;
-  padding: 30px;
-  border-radius: 12px;
-  max-width: 500px;
+  padding: 40px;
+  border-radius: 16px;
+  width: 420px;
+  box-shadow: 0 0 30px rgba(56,189,248,0.15);
 }
 
+/* ===== 标题 ===== */
+.card h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #38bdf8;
+}
+
+/* ===== 按钮 ===== */
 button {
-  padding: 10px 20px;
+  width: 100%;
+  padding: 12px;
   background: #38bdf8;
   border: none;
   color: #000;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 8px;
+  font-weight: bold;
+  margin-top: 10px;
 }
 
+button:hover {
+  opacity: 0.9;
+}
+
+/* ===== 输入框 ===== */
 input {
-  padding: 10px;
+  padding: 12px;
   width: 100%;
-  margin-bottom: 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: none;
+  margin-bottom: 10px;
+}
+
+/* ===== 结果显示（关键修复） ===== */
+#result {
+  margin-top: 15px;
+  padding: 10px;
+  background: #0f172a;
+  border-radius: 8px;
+
+  /* 👇 防止溢出核心 */
+  word-break: break-all;
+  white-space: normal;
+  overflow-wrap: break-word;
+
+  max-height: 120px;
+  overflow-y: auto;
+  font-size: 13px;
+  color: #94a3b8;
 }
 </style>
 </head>
@@ -79,9 +123,7 @@ input {
 </div>
 
 <div class="main">
-  <div class="card" id="content">
-    <h2>加载中...</h2>
-  </div>
+  <div class="card" id="content"></div>
 </div>
 
 <script>
@@ -106,7 +148,7 @@ if (isUserMode) {
 // ===== 普通模式 =====
 else {
   content.innerHTML = `
-    <h2>获取订阅地址</h2>
+    <h2>获取专属订阅地址</h2>
     <button onclick="getSub()">获取订阅</button>
     <p id="result"></p>
   `;
@@ -121,8 +163,7 @@ async function getSub() {
     const data = await res.json();
 
     if (data.data && data.data.content) {
-      const sub = data.data.content;
-
+      const sub = atob(data.data.content);
 
       document.getElementById("result").innerText = sub;
 
