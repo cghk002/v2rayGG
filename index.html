@@ -163,7 +163,7 @@ async function getSub() {
 
     if (res) { 
 
-      document.getElementById("result").innerText = res;
+      document.getElementById("result").innerText = await res.text();
 
       await navigator.clipboard.writeText(sub);
 
